@@ -15,13 +15,19 @@ import javax.swing.JLabel;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
+import org.opencv.core.MatOfDMatch;
 import org.opencv.core.MatOfInt4;
+import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.features2d.DescriptorExtractor;
+import org.opencv.features2d.DescriptorMatcher;
+import org.opencv.features2d.FeatureDetector;
+import org.opencv.features2d.Features2d;
 import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
 
@@ -71,8 +77,7 @@ public class utils {
 		return contours; 
 	}
 
-	public static Mat Scaling(Mat Object, Mat sroadSign) {
-
+	public static Mat Scaling(Mat Object, Mat sroadSign) {// scale Object to size of sroadSign and turn it to gray
 		Mat sObject = new Mat(); 
 		Imgproc.resize(Object, sObject, sroadSign.size()); 
 		Mat grayObject = new Mat(sObject.rows(), sObject.cols(), sObject.type()); 
@@ -88,7 +93,7 @@ public class utils {
 		return graySign;
 	}
 
-	public static Mat extractRoadSign(Mat img) {
+	public static Mat extractRoadSign(Mat img) {// extract the rond red road sign from a image
 		
 		Mat m = img;
 		Mat cuttedImg = new Mat();
@@ -120,5 +125,65 @@ public class utils {
 		}	
 		return cuttedImg;
 	}
+	
+	public static Integer Matching(Mat object, Mat sroadSign) {
+		
+		FeatureDetector orbDetector = FeatureDetector.create(FeatureDetector.ORB); 
+		DescriptorExtractor orbExtractor = DescriptorExtractor.create(DescriptorExtractor.ORB); 
 
+		MatOfKeyPoint objectKeypoints = new MatOfKeyPoint(); 
+		Mat grayObject = utils.SigntoGray(object);
+		orbDetector.detect(grayObject, objectKeypoints); 
+		
+		MatOfKeyPoint signKeypoints = new MatOfKeyPoint(); 
+		Mat graySign = utils.SigntoGray(sroadSign);
+		orbDetector.detect(graySign, signKeypoints); 
+
+		Mat objectDescriptor = new Mat(object.rows(), object.cols(), object.type()); 
+		orbExtractor.compute(grayObject, objectKeypoints, objectDescriptor); 
+
+		Mat signDescriptor = new Mat(sroadSign.rows(), sroadSign.cols(), sroadSign.type()); 
+		orbExtractor.compute(graySign, signKeypoints, signDescriptor); 
+		
+		// faire le matching
+		MatOfDMatch matchs = new MatOfDMatch(); 
+		DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE); 
+		matcher.match(objectDescriptor, signDescriptor, matchs); 
+		
+		System.out.println(matchs.dump());
+		return Integer.valueOf(matchs.dump().length());
+		//Mat matchedImage = new Mat(sroadSign.rows(), sroadSign.cols()*2, sroadSign.type()); 
+		//Features2d.drawMatches(object, objectKeypoints, sroadSign, signKeypoints, matchs, matchedImage); 
+
+	}
+
+	public static ArrayList<String> getFiles(String path) {// return names of ref
+	    ArrayList<String> files = new ArrayList<String>();
+	    File file = new File(path);
+	    File[] tempList = file.listFiles();
+
+	    for (int i = 0; i < tempList.length; i++) {
+	        if (tempList[i].isFile()) {
+//	              System.out.println("文     件：" + tempList[i]);
+	            files.add(tempList[i].toString());
+	        }
+	        if (tempList[i].isDirectory()) {
+//	              System.out.println("文件夹：" + tempList[i]);
+	        }
+	    }
+	    return files;
+	}
+
+	public static String getFileName(String fName) {
+        File tempFile =new File( fName.trim());
+        String fileName = tempFile.getName();
+
+        String[] buff = fileName.split("\\.");
+        return buff[0];
+	}
+	
+	public static String splitDimension(String str) {    
+        String[] buff = str.split("\\x");
+        return buff[1];
+	}
 }
