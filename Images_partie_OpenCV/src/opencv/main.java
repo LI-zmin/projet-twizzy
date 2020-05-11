@@ -144,14 +144,14 @@ public class main {
 		//		utils.Imshow("Detection des cercles rouges", m);
 
 
-		//		8. couper image cercle rouge et mise a echelle
-		//		Mat m = utils.LectureImage("s_p3.jpg"); 
-		//		Mat extFromImg = utils.extractRoadSign(m); // couper image
-		//		utils.Imshow("ext", extFromImg);
-		//		
-		//		Mat sroadSign = utils.LectureImage("ref30.jpg");
-		//	    Mat ImgEchelle = utils.Scaling(extFromImg, sroadSign);
-		//	    utils.Imshow("ext_scal", ImgEchelle );
+//				8. couper image cercle rouge et mise a echelle
+				Mat m = utils.LectureImage("C:\\Users\\Administrator\\Desktop\\projet-twizzy\\Images_partie_OpenCV\\s_p3.jpg"); 
+				Mat extFromImg = utils.extractRoadSign(m); // couper image
+				utils.Imshow("ext", extFromImg);
+				
+				Mat sroadSign = utils.LectureImage("C:\\\\Users\\\\Administrator\\\\Desktop\\\\projet-twizzy\\\\Images_partie_OpenCV\\\\ref30.jpg");
+			    Mat ImgEchelle = utils.Scaling(extFromImg, sroadSign);
+			    utils.Imshow("ext_scal", ImgEchelle );
 
 
 	}
