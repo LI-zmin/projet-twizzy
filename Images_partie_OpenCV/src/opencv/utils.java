@@ -77,13 +77,10 @@ public class utils {
 		return contours; 
 	}
 
-	public static Mat Scaling(Mat Object, Mat sroadSign) {// scale Object to size of sroadSign and turn it to gray
+	public static Mat Scaling(Mat Object, Mat sroadSign) {// scale Object to size of sroadSign 
 		Mat sObject = new Mat(); 
 		Imgproc.resize(Object, sObject, sroadSign.size()); 
-		Mat grayObject = new Mat(sObject.rows(), sObject.cols(), sObject.type()); 
-		Imgproc.cvtColor(sObject, grayObject, Imgproc.COLOR_BGRA2GRAY); 
-		Core.normalize(grayObject, grayObject, 0, 255, Core.NORM_MINMAX); 	
-		return grayObject;
+		return sObject;
 	}
 
 	public static Mat SigntoGray(Mat sroadSign) {
@@ -126,7 +123,7 @@ public class utils {
 		return cuttedImg;
 	}
 	
-	public static Integer Matching(Mat object, Mat sroadSign) {
+	public static void Matching(Mat object, Mat sroadSign) {
 		
 		FeatureDetector orbDetector = FeatureDetector.create(FeatureDetector.ORB); 
 		DescriptorExtractor orbExtractor = DescriptorExtractor.create(DescriptorExtractor.ORB); 
@@ -150,10 +147,10 @@ public class utils {
 		DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE); 
 		matcher.match(objectDescriptor, signDescriptor, matchs); 
 		
-		System.out.println(matchs.dump());
-		return Integer.valueOf(matchs.dump().length());
-		//Mat matchedImage = new Mat(sroadSign.rows(), sroadSign.cols()*2, sroadSign.type()); 
-		//Features2d.drawMatches(object, objectKeypoints, sroadSign, signKeypoints, matchs, matchedImage); 
+	    //System.out.println(matchs.dump());
+		//return Integer.valueOf(matchs.dump().length());
+		Mat matchedImage = new Mat(sroadSign.rows(), sroadSign.cols()*2, sroadSign.type()); 
+		Features2d.drawMatches(object, objectKeypoints, sroadSign, signKeypoints, matchs, matchedImage); 
 
 	}
 
@@ -164,11 +161,9 @@ public class utils {
 
 	    for (int i = 0; i < tempList.length; i++) {
 	        if (tempList[i].isFile()) {
-//	              System.out.println("文     件：" + tempList[i]);
 	            files.add(tempList[i].toString());
 	        }
 	        if (tempList[i].isDirectory()) {
-//	              System.out.println("文件夹：" + tempList[i]);
 	        }
 	    }
 	    return files;

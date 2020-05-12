@@ -152,13 +152,13 @@ public class main {
 		Mat extFromImg = utils.extractRoadSign(m); // couper image
 		//utils.Imshow("ext", extFromImg);
 
-		Mat sroadSign = utils.LectureImage("C:\\Users\\Administrator\\Desktop\\projet-twizzy\\Images_partie_OpenCV\\ref\\ref70.jpg");
-		Mat ImgEchelle = utils.Scaling(extFromImg, sroadSign); // the final img we try to match with diff ref
-		//utils.Imshow("ext_scal", ImgEchelle );
+		Mat roadSignTaille = utils.LectureImage("C:\\Users\\Administrator\\Desktop\\projet-twizzy\\Images_partie_OpenCV\\ref\\ref70.jpg");
+		Mat ImgEchelle = utils.Scaling(extFromImg, roadSignTaille); // the final img we try to match with diff ref
+		utils.Imshow("ext_scal", ImgEchelle );
 
 		//		9. faire le matching 
 		//utils.Imshow("ext_scal", sroadSign );
-		utils.Matching(extFromImg, sroadSign);
+		//utils.Matching(extFromImg, sroadSign);
 
 		//		10. compare entre les ref et choisir le bonne
 
@@ -168,8 +168,8 @@ public class main {
 		ArrayList<Mat> refMats = new ArrayList<Mat>();
 		for(int i = 0; i<refPaths.size(); i++) {
 			refNames.add(i, utils.getFileName(refPaths.get(i)));
-			refMats.add(utils.LectureImage(refPaths.get(i)));
-			//utils.Imshow(refNames.get(i), refMats.get(i));
+			refMats.add(i,utils.LectureImage(refPaths.get(i)));
+			utils.Imshow(Integer.toString(i) , refMats.get(i));
 		}
 
 		// compare the new object with all the roadsign and regitre the length of the 
@@ -177,9 +177,11 @@ public class main {
 
 		ArrayList<Integer> matchingReslut = new ArrayList<Integer>();
 		for(int i = 0; i<refMats.size();i++) {
-			Integer element = utils.Matching(extFromImg, refMats.get(i));
-			matchingReslut.add(i, element);
-			System.out.println(matchingReslut.get(i));
+//			Integer element = utils.Matching(ImgEchelle, refMats.get(i));
+//			matchingReslut.add(i, element);
+//			System.out.println(matchingReslut.get(i));
+			
+			utils.Matching(ImgEchelle, refMats.get(i));
 		}
 
 	}
