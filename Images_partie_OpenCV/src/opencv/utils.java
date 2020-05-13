@@ -5,6 +5,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -24,6 +25,7 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.features2d.DMatch;
 import org.opencv.features2d.DescriptorExtractor;
 import org.opencv.features2d.DescriptorMatcher;
 import org.opencv.features2d.FeatureDetector;
@@ -123,7 +125,7 @@ public class utils {
 		return cuttedImg;
 	}
 	
-	public static void Matching(Mat object, Mat sroadSign) {
+	public static MatOfDMatch Matching(Mat object, Mat sroadSign) {
 		
 		FeatureDetector orbDetector = FeatureDetector.create(FeatureDetector.ORB); 
 		DescriptorExtractor orbExtractor = DescriptorExtractor.create(DescriptorExtractor.ORB); 
@@ -143,15 +145,40 @@ public class utils {
 		orbExtractor.compute(graySign, signKeypoints, signDescriptor); 
 		
 		// faire le matching
-		MatOfDMatch matchs = new MatOfDMatch(); 
+		MatOfDMatch matches = new MatOfDMatch(); 
 		DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE); 
-		matcher.match(objectDescriptor, signDescriptor, matchs); 
+		matcher.match(objectDescriptor, signDescriptor, matches); 
 		
-	    //System.out.println(matchs.dump());
-		//return Integer.valueOf(matchs.dump().length());
-		Mat matchedImage = new Mat(sroadSign.rows(), sroadSign.cols()*2, sroadSign.type()); 
-		Features2d.drawMatches(object, objectKeypoints, sroadSign, signKeypoints, matchs, matchedImage); 
+		List<DMatch> matchesList = matches.toList();
+	    Double max_dist = 0.0;
+	    Double min_dist = 100.0;
+	    Double moy_dist = 0.0;
 
+	    for(int i = 0;i < matchesList.size(); i++){
+	        Double dist = (double) matchesList.get(i).distance;
+	        moy_dist=moy_dist+dist;
+	        if (dist < min_dist)
+	            min_dist = dist;
+	        if ( dist > max_dist)
+	            max_dist = dist;
+	    }
+	    moy_dist=moy_dist/matchesList.size();
+	    System.out.println("min_dist " + min_dist+"max_dist "+max_dist+"moy_dist "+moy_dist);
+
+	    LinkedList<DMatch> good_matches = new LinkedList<DMatch>();
+	    for(int i = 0;i < matchesList.size(); i++){
+	        if (matchesList.get(i).distance <= (0.8*moy_dist))
+	            good_matches.addLast(matchesList.get(i));
+	    }
+	    MatOfDMatch goodMatches = new MatOfDMatch();
+	    goodMatches.fromList(good_matches);
+
+	    System.out.println(matches.size() + " " + goodMatches.size());
+
+		Mat matchedImage = new Mat(sroadSign.rows(), sroadSign.cols()*2, sroadSign.type()); 
+		Features2d.drawMatches(object, objectKeypoints, sroadSign, signKeypoints, goodMatches, matchedImage); 
+		Imshow(goodMatches.size().toString()+" moy_dist:"+moy_dist, matchedImage);
+		return matches;
 	}
 
 	public static ArrayList<String> getFiles(String path) {// return names of ref

@@ -10,6 +10,7 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
+import org.opencv.core.MatOfDMatch;
 import org.opencv.core.MatOfInt4;
 import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.MatOfPoint;
@@ -18,9 +19,9 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
-import org.opencv.features2d.DescriptorExtractor;
+/*import org.opencv.features2d.DescriptorExtractor;
 import org.opencv.features2d.FeatureDetector;
-import org.opencv.highgui.Highgui;
+import org.opencv.highgui.Highgui;*/
 import org.opencv.imgproc.Imgproc;
 
 public class main {
@@ -148,11 +149,11 @@ public class main {
 
 
 		//  8. couper image cercle rouge et mise a echelle
-		Mat m = utils.LectureImage("C:\\Users\\Administrator\\Desktop\\projet-twizzy\\Images_partie_OpenCV\\s_p2.jpg"); 
+		Mat m = utils.LectureImage("C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\s_p2.jpg"); 
 		Mat extFromImg = utils.extractRoadSign(m); // couper image
 		//utils.Imshow("ext", extFromImg);
 
-		Mat roadSignTaille = utils.LectureImage("C:\\Users\\Administrator\\Desktop\\projet-twizzy\\Images_partie_OpenCV\\ref\\ref70.jpg");
+		Mat roadSignTaille = utils.LectureImage("C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\ref\\ref70.jpg");
 		Mat ImgEchelle = utils.Scaling(extFromImg, roadSignTaille); // the final img we try to match with diff ref
 		utils.Imshow("ext_scal", ImgEchelle );
 
@@ -163,26 +164,27 @@ public class main {
 		//		10. compare entre les ref et choisir le bonne
 
 		// add all the refs 
-		ArrayList<String> refPaths = utils.getFiles("C:\\Users\\Administrator\\Desktop\\projet-twizzy\\Images_partie_OpenCV\\ref");		    
+		ArrayList<String> refPaths = utils.getFiles("C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\ref");		    
 		ArrayList<String> refNames = new ArrayList<String>();
 		ArrayList<Mat> refMats = new ArrayList<Mat>();
 		for(int i = 0; i<refPaths.size(); i++) {
 			refNames.add(i, utils.getFileName(refPaths.get(i)));
 			refMats.add(i,utils.LectureImage(refPaths.get(i)));
-			utils.Imshow(Integer.toString(i) , refMats.get(i));
+			//utils.Imshow(Integer.toString(i) , refMats.get(i));
 		}
 
 		// compare the new object with all the roadsign and regitre the length of the 
 		// list with mathced points
 
-		ArrayList<Integer> matchingReslut = new ArrayList<Integer>();
+		ArrayList<MatOfDMatch> matchingReslut = new ArrayList<MatOfDMatch>();
 		for(int i = 0; i<refMats.size();i++) {
-//			Integer element = utils.Matching(ImgEchelle, refMats.get(i));
-//			matchingReslut.add(i, element);
-//			System.out.println(matchingReslut.get(i));
-			
-			utils.Matching(ImgEchelle, refMats.get(i));
+			MatOfDMatch element = utils.Matching(ImgEchelle, refMats.get(i));
+			matchingReslut.add(i, element);
+			//System.out.println(matchingReslut.get(i));		
+			//utils.Matching(ImgEchelle, refMats.get(i));
+			//System.out.println(element.dump().length());
 		}
-
+//		MatOfDMatch matchingReslut = utils.Matching(ImgEchelle, extFromImg);
+//		System.out.println(matchingReslut.toString());
 	}
 }
