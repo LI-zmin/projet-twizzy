@@ -1,3 +1,9 @@
 12/05/2020
 already coded the matching method offered by the teacher(mathing caractistic points) but it's not working well, so LI will try to classsify the imgs by 
 building a svm classifier.
+
+13/05/2020
+still working for matching
+
+14/05/2020
+try to read video and save as a sequence of imgs

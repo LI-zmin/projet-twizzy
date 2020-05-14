@@ -1,6 +1,7 @@
 package opencv;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -29,6 +30,7 @@ import org.opencv.features2d.DescriptorMatcher;
 import org.opencv.features2d.FeatureDetector;
 import org.opencv.features2d.Features2d;
 import org.opencv.highgui.Highgui;
+import org.opencv.highgui.VideoCapture;
 import org.opencv.imgproc.Imgproc;
 
 public class utils {
@@ -77,17 +79,17 @@ public class utils {
 		return contours; 
 	}
 
-	public static Mat Scaling(Mat Object, Mat sroadSign) {// scale Object to size of sroadSign 
+	public static Mat Scaling(Mat Object, Mat std) {// scale Object to size of sroadSign 
 		Mat sObject = new Mat(); 
-		Imgproc.resize(Object, sObject, sroadSign.size()); 
+		Imgproc.resize(Object, sObject, std.size()); 
 		return sObject;
 	}
 
-	public static Mat SigntoGray(Mat sroadSign) {
-		Mat graySign = new Mat(sroadSign.rows(), sroadSign.cols(), sroadSign.type()); 
-		Imgproc.cvtColor(sroadSign, graySign, Imgproc.COLOR_BGRA2GRAY); 
-		Core.normalize(graySign, graySign, 0, 255, Core.NORM_MINMAX); 
-		return graySign;
+	public static Mat SigntoGray(Mat Object) {
+		Mat grayObject = new Mat(Object.rows(), Object.cols(), Object.type()); 
+		Imgproc.cvtColor(Object, grayObject, Imgproc.COLOR_BGRA2GRAY); 
+		Core.normalize(grayObject, grayObject, 0, 255, Core.NORM_MINMAX); 
+		return grayObject;
 	}
 
 	public static Mat extractRoadSign(Mat img) {// extract the rond red road sign from a image
@@ -123,34 +125,36 @@ public class utils {
 		return cuttedImg;
 	}
 	
-	public static void Matching(Mat object, Mat sroadSign) {
-		
+	public static void Matching(Mat sObject, Mat sroadSign) {// not functoning well
+		//extraction des caracteristiques
 		FeatureDetector orbDetector = FeatureDetector.create(FeatureDetector.ORB); 
 		DescriptorExtractor orbExtractor = DescriptorExtractor.create(DescriptorExtractor.ORB); 
 
 		MatOfKeyPoint objectKeypoints = new MatOfKeyPoint(); 
-		Mat grayObject = utils.SigntoGray(object);
+		Mat grayObject = utils.SigntoGray(sObject);
 		orbDetector.detect(grayObject, objectKeypoints); 
 		
 		MatOfKeyPoint signKeypoints = new MatOfKeyPoint(); 
 		Mat graySign = utils.SigntoGray(sroadSign);
 		orbDetector.detect(graySign, signKeypoints); 
 
-		Mat objectDescriptor = new Mat(object.rows(), object.cols(), object.type()); 
+		Mat objectDescriptor = new Mat(sObject.rows(), sObject.cols(), sObject.type()); 
 		orbExtractor.compute(grayObject, objectKeypoints, objectDescriptor); 
 
 		Mat signDescriptor = new Mat(sroadSign.rows(), sroadSign.cols(), sroadSign.type()); 
 		orbExtractor.compute(graySign, signKeypoints, signDescriptor); 
 		
-		// faire le matching
+		// le matching
 		MatOfDMatch matchs = new MatOfDMatch(); 
 		DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE); 
 		matcher.match(objectDescriptor, signDescriptor, matchs); 
 		
-	    //System.out.println(matchs.dump());
+	    System.out.println(matchs.dump());
+	    //System.out.println(matchs.);
 		//return Integer.valueOf(matchs.dump().length());
 		Mat matchedImage = new Mat(sroadSign.rows(), sroadSign.cols()*2, sroadSign.type()); 
-		Features2d.drawMatches(object, objectKeypoints, sroadSign, signKeypoints, matchs, matchedImage); 
+		utils.Imshow("matched ing ", matchedImage);
+		Features2d.drawMatches(sObject, objectKeypoints, sroadSign, signKeypoints, matchs, matchedImage); 
 
 	}
 
@@ -180,5 +184,100 @@ public class utils {
 	public static String splitDimension(String str) {    
         String[] buff = str.split("\\x");
         return buff[1];
+	}
+	
+	public static void MatchingYujun(Mat object, Mat sroadSign) {
+		
+		FeatureDetector orbDetector = FeatureDetector.create(FeatureDetector.ORB); 
+		DescriptorExtractor orbExtractor = DescriptorExtractor.create(DescriptorExtractor.ORB); 
+
+		MatOfKeyPoint objectKeypoints = new MatOfKeyPoint(); 
+		Mat grayObject = utils.SigntoGray(object);
+		orbDetector.detect(grayObject, objectKeypoints); 
+		
+		MatOfKeyPoint signKeypoints = new MatOfKeyPoint(); 
+		Mat graySign = utils.SigntoGray(sroadSign);
+		orbDetector.detect(graySign, signKeypoints); 
+
+		Mat objectDescriptor = new Mat(object.rows(), object.cols(), object.type()); 
+		orbExtractor.compute(grayObject, objectKeypoints, objectDescriptor); 
+
+		Mat signDescriptor = new Mat(sroadSign.rows(), sroadSign.cols(), sroadSign.type()); 
+		orbExtractor.compute(graySign, signKeypoints, signDescriptor); 
+		
+		// faire le matching
+		MatOfDMatch matchs = new MatOfDMatch(); 
+		DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE); 
+		matcher.match(objectDescriptor, signDescriptor, matchs); 
+		
+	    //System.out.println(matchs.dump());
+		//return Integer.valueOf(matchs.dump().length());
+		Mat matchedImage = new Mat(sroadSign.rows(), sroadSign.cols()*2, sroadSign.type()); 
+		Features2d.drawMatches(object, objectKeypoints, sroadSign, signKeypoints, matchs, matchedImage); 
+
+	}
+	
+	// READ VIDEO 
+	public static VideoCapture LectureVideo(String filename) {
+		File f = new File(filename);		
+		VideoCapture capture = new VideoCapture();
+		 capture.open(f.getAbsolutePath());
+		if(!capture.isOpened()) {
+			System.out.println("error in lecture video");			
+		}
+		return capture;
+	}
+
+	public static BufferedImage Mat2BufferedImage(Mat m) {
+		//Method converts a Mat to a Buffered Image
+		int type = BufferedImage.TYPE_BYTE_GRAY;
+		if ( m.channels() > 1 ) {
+			type = BufferedImage.TYPE_3BYTE_BGR;
+		}
+		int bufferSize = m.channels()*m.cols()*m.rows();
+		byte [] b = new byte[bufferSize];
+		m.get(0,0,b); // get all the pixels
+		BufferedImage image = new BufferedImage(m.cols(),m.rows(), type);
+		final byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+		System.arraycopy(b, 0, targetPixels, 0, b.length);  
+		return image;
+	}
+
+	public static void PlayVideo(String filename) {
+		Mat frame = new Mat();
+
+		//Create new VideoCapture object
+		VideoCapture camera = new VideoCapture(filename);
+		
+		//Create new JFrame object
+		JFrame jframe = new JFrame("Video Title");
+
+		//Inform jframe what to do in the event that you close the program
+		jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		//Create a new JLabel object vidpanel
+		JLabel vidPanel = new JLabel();
+
+		//assign vidPanel to jframe
+		jframe.setContentPane(vidPanel);
+
+		//set frame size
+		jframe.setSize(2000, 4000);
+
+		//make jframe visible
+		jframe.setVisible(true);
+
+		while (true) {
+			//If next video frame is available
+			if (camera.read(frame)) {
+				//Create new image icon object and convert Mat to Buffered Image
+				ImageIcon image = new ImageIcon(utils.Mat2BufferedImage(frame));
+				//Update the image in the vidPanel
+				vidPanel.setIcon(image);
+				//Update the vidPanel in the JFrame
+				vidPanel.repaint();
+
+			}
+		}
 	}
 }
