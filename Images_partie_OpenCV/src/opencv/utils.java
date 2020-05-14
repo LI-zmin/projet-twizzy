@@ -31,6 +31,7 @@ import org.opencv.features2d.FeatureDetector;
 import org.opencv.features2d.Features2d;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
+import org.opencv.video.Video;
 import org.opencv.imgproc.Imgproc;
 
 public class utils {
@@ -220,8 +221,8 @@ public class utils {
 	// READ VIDEO 
 	public static VideoCapture LectureVideo(String filename) {
 		File f = new File(filename);		
-		VideoCapture capture = new VideoCapture();
-		 capture.open(f.getAbsolutePath());
+		VideoCapture capture = new VideoCapture(f.getAbsolutePath());
+		
 		if(!capture.isOpened()) {
 			System.out.println("error in lecture video");			
 		}
@@ -247,26 +248,19 @@ public class utils {
 		Mat frame = new Mat();
 
 		//Create new VideoCapture object
-		VideoCapture camera = new VideoCapture(filename);
-		
+		VideoCapture camera = new VideoCapture(filename);		
 		//Create new JFrame object
 		JFrame jframe = new JFrame("Video Title");
-
 		//Inform jframe what to do in the event that you close the program
 		jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
 		//Create a new JLabel object vidpanel
 		JLabel vidPanel = new JLabel();
-
 		//assign vidPanel to jframe
 		jframe.setContentPane(vidPanel);
-
 		//set frame size
 		jframe.setSize(2000, 4000);
-
 		//make jframe visible
 		jframe.setVisible(true);
-
 		while (true) {
 			//If next video frame is available
 			if (camera.read(frame)) {
@@ -276,8 +270,22 @@ public class utils {
 				vidPanel.setIcon(image);
 				//Update the vidPanel in the JFrame
 				vidPanel.repaint();
-
 			}
 		}
+		
+	}
+	public BufferedImage toBufferedImage(Mat matrix){
+		int type = BufferedImage.TYPE_BYTE_GRAY;
+		if ( matrix.channels() > 1 ) {
+			type = BufferedImage.TYPE_3BYTE_BGR;
+		}
+		int bufferSize = matrix.channels()*matrix.cols()*matrix.rows();
+		byte [] buffer = new byte[bufferSize];
+		matrix.get(0,0,buffer); // get all the pixels
+		BufferedImage image = new BufferedImage(matrix.cols(),matrix.rows(), type);
+		final byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+		System.arraycopy(buffer, 0, targetPixels, 0, buffer.length);  
+		return image;
 	}
 }
+

@@ -2,6 +2,10 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="Images_partie_OpenCV/src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/opencv-2.4.13"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/opencv-2.4.13">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Users/Administrator/Downloads/opencv/build/x64/vc14/bin"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="Images_partie_OpenCV/bin"/>
 </classpath>
