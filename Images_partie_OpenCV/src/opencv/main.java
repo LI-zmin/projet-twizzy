@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 
+import javax.swing.*;
+
+import java.awt.image.*;
+
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -19,6 +23,7 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.highgui.VideoCapture;
 /*import org.opencv.features2d.DescriptorExtractor;
 import org.opencv.features2d.FeatureDetector;
 import org.opencv.highgui.Highgui;*/
@@ -149,12 +154,12 @@ public class main {
 
 
 		//  8. couper image cercle rouge et mise a echelle
-		Mat m = utils.LectureImage("C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\s_p2.jpg"); 
-		Mat extFromImg = utils.extractRoadSign(m); // couper image
+		Mat m = utils.LectureImage("C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\ref\\ref110.jpg"); 
+		//Mat extFromImg = utils.extractRoadSign(m); // couper image
 		//utils.Imshow("ext", extFromImg);
 
-		Mat roadSignTaille = utils.LectureImage("C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\ref\\ref70.jpg");
-		Mat ImgEchelle = utils.Scaling(extFromImg, roadSignTaille); // the final img we try to match with diff ref
+		Mat ImgEchelle  = utils.LectureImage("C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\ref\\ref110.jpg");
+		//Mat ImgEchelle = utils.Scaling(extFromImg, roadSignTaille); // the final img we try to match with diff ref
 		utils.Imshow("ext_scal", ImgEchelle );
 
 		//		9. faire le matching 
@@ -184,7 +189,53 @@ public class main {
 			//utils.Matching(ImgEchelle, refMats.get(i));
 			//System.out.println(element.dump().length());
 		}
-//		MatOfDMatch matchingReslut = utils.Matching(ImgEchelle, extFromImg);
-//		System.out.println(matchingReslut.toString());
+		//		MatOfDMatch matchingReslut = utils.Matching(ImgEchelle, extFromImg);
+		//		System.out.println(matchingReslut.toString());
+
+		// VIDEO PLAY
+		String filename = "C:\\Users\\Administrator\\Desktop\\videoplayback.mp4";
+
+		//VideoCapture cap = utils.LectureVideo(filename);
+
+		//internet example
+		//utils.PlayVideo(filename);
+
+
+		// ex prof
+		/*JFrame frame = new JFrame("Video Playback Example");  
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  
+		frame.setSize(400,400);  
+		JLabel imageLabel = new JLabel();
+		frame.add(imageLabel);
+		frame.setVisible(true);
+		ImageProcessor imageProcessor = new ImageProcessor();
+		Mat webcamMatImage = new Mat();  
+		BufferedImage tempImage;  
+		VideoCapture capture = new VideoCapture(filename);
+		if( capture.isOpened()){  
+			while (true){  
+				capture.read(webcamMatImage);  
+				if( !webcamMatImage.empty() ){  
+					tempImage= imageProcessor.toBufferedImage(webcamMatImage);
+					ImageIcon imageIcon = new ImageIcon(tempImage, "Video playback");
+					imageLabel.setIcon(imageIcon);
+					frame.pack();  //this will resize the window to fit the image
+					try {
+						Thread.sleep(50);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}  
+				else{  
+					System.out.println(" Frame not captured or video has finished"); 
+					break;  
+				}
+			}  
+		}
+		else{
+			System.out.println("Couldn't open video file.");
+		}
+*/
 	}
 }
