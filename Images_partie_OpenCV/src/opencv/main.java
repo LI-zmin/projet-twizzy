@@ -193,7 +193,7 @@ public class main {
 		//		System.out.println(matchingReslut.toString());
 
 		// VIDEO PLAY
-		String filename = "C:\\Users\\Administrator\\Desktop\\videoplayback.mp4";
+		String filename = "C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\video1.avi";
 
 		//VideoCapture cap = utils.LectureVideo(filename);
 
@@ -202,7 +202,7 @@ public class main {
 
 
 		// ex prof
-		/*JFrame frame = new JFrame("Video Playback Example");  
+		JFrame frame = new JFrame("Video Playback Example");  
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  
 		frame.setSize(400,400);  
 		JLabel imageLabel = new JLabel();
@@ -236,6 +236,6 @@ public class main {
 		else{
 			System.out.println("Couldn't open video file.");
 		}
-*/
+
 	}
 }
