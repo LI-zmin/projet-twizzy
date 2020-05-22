@@ -155,12 +155,12 @@ public class main {
 
 		//  8. couper image cercle rouge et mise a echelle
 		Mat m = utils.LectureImage("C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\ref\\ref110.jpg"); 
-		//Mat extFromImg = utils.extractRoadSign(m); // couper image
-		//utils.Imshow("ext", extFromImg);
+		Mat extFromImg = utils.extractRoadSign(m); // couper image
+		utils.Imshow("ext", extFromImg);
 
 		Mat ImgEchelle  = utils.LectureImage("C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\ref\\ref110.jpg");
 		//Mat ImgEchelle = utils.Scaling(extFromImg, roadSignTaille); // the final img we try to match with diff ref
-		utils.Imshow("ext_scal", ImgEchelle );
+		//utils.Imshow("ext_scal", ImgEchelle );
 
 		//		9. faire le matching 
 		//utils.Imshow("ext_scal", sroadSign );
@@ -175,7 +175,6 @@ public class main {
 		for(int i = 0; i<refPaths.size(); i++) {
 			refNames.add(i, utils.getFileName(refPaths.get(i)));
 			refMats.add(i,utils.LectureImage(refPaths.get(i)));
-			//utils.Imshow(Integer.toString(i) , refMats.get(i));
 		}
 
 		// compare the new object with all the roadsign and regitre the length of the 
@@ -189,19 +188,11 @@ public class main {
 			//utils.Matching(ImgEchelle, refMats.get(i));
 			//System.out.println(element.dump().length());
 		}
-		//		MatOfDMatch matchingReslut = utils.Matching(ImgEchelle, extFromImg);
-		//		System.out.println(matchingReslut.toString());
+		
 
 		// VIDEO PLAY
 		String filename = "C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\video1.avi";
 
-		//VideoCapture cap = utils.LectureVideo(filename);
-
-		//internet example
-		//utils.PlayVideo(filename);
-
-
-		// ex prof
 		JFrame frame = new JFrame("Video Playback Example");  
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  
 		frame.setSize(400,400);  
@@ -216,7 +207,7 @@ public class main {
 			while (true){  
 				capture.read(webcamMatImage);  
 				if( !webcamMatImage.empty() ){  
-					tempImage= imageProcessor.toBufferedImage(webcamMatImage);
+					tempImage= imageProcessor.toBufferedImage(utils.extractRoadSign(webcamMatImage));
 					ImageIcon imageIcon = new ImageIcon(tempImage, "Video playback");
 					imageLabel.setIcon(imageIcon);
 					frame.pack();  //this will resize the window to fit the image
