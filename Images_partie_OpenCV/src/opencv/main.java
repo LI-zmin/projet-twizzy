@@ -154,12 +154,13 @@ public class main {
 
 
 		//  8. couper image cercle rouge et mise a echelle
-		Mat m = utils.LectureImage("C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\ref\\ref110.jpg"); 
+		Mat m = utils.LectureImage("C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\s_p1.jpg"); 
 		Mat extFromImg = utils.extractRoadSign(m); // couper image
-		utils.Imshow("ext", extFromImg);
+		//utils.Imshow("ext", extFromImg);
 
-		Mat ImgEchelle  = utils.LectureImage("C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\ref\\ref110.jpg");
-		//Mat ImgEchelle = utils.Scaling(extFromImg, roadSignTaille); // the final img we try to match with diff ref
+		Mat roadSignTaille  = utils.LectureImage("C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\ref\\ref30.jpg");
+		Mat ImgEchelle = utils.Scaling(extFromImg, roadSignTaille); // the final img we try to match with diff ref
+		
 		//utils.Imshow("ext_scal", ImgEchelle );
 
 		//		9. faire le matching 
@@ -169,6 +170,7 @@ public class main {
 		//		10. compare entre les ref et choisir le bonne
 
 		// add all the refs 
+		
 		ArrayList<String> refPaths = utils.getFiles("C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\ref");		    
 		ArrayList<String> refNames = new ArrayList<String>();
 		ArrayList<Mat> refMats = new ArrayList<Mat>();
@@ -177,17 +179,23 @@ public class main {
 			refMats.add(i,utils.LectureImage(refPaths.get(i)));
 		}
 
-		// compare the new object with all the roadsign and regitre the length of the 
-		// list with mathced points
+		// compare the new object with all the road sign and regitre the length of the 
+		// list with matched points
 
-		ArrayList<MatOfDMatch> matchingReslut = new ArrayList<MatOfDMatch>();
+		/*ArrayList<MatOfDMatch> matchingReslut = new ArrayList<MatOfDMatch>();
+		double MaxNumberOfMatchedPoints =0.0;
 		for(int i = 0; i<refMats.size();i++) {
 			MatOfDMatch element = utils.Matching(ImgEchelle, refMats.get(i));
 			matchingReslut.add(i, element);
-			//System.out.println(matchingReslut.get(i));		
-			//utils.Matching(ImgEchelle, refMats.get(i));
-			//System.out.println(element.dump().length());
+			if (MaxNumberOfMatchedPoints<element.size().height) {
+				MaxNumberOfMatchedPoints=element.size().height;
+			}
 		}
+		for(int i = 0; i<matchingReslut.size();i++) {
+			if (MaxNumberOfMatchedPoints==matchingReslut.get(i).size().height) {
+				 System.out.println("Panneau "+refNames.get(i)+" detected");
+			}
+		}*/
 		
 
 		// VIDEO PLAY
@@ -207,9 +215,27 @@ public class main {
 			while (true){  
 				capture.read(webcamMatImage);  
 				if( !webcamMatImage.empty() ){  
-					tempImage= imageProcessor.toBufferedImage(utils.extractRoadSign(webcamMatImage));
+					tempImage= imageProcessor.toBufferedImage(utils.calloutRoadSign(webcamMatImage));
+					Mat DetectedSign = utils.extractRoadSign(webcamMatImage);
 					ImageIcon imageIcon = new ImageIcon(tempImage, "Video playback");
 					imageLabel.setIcon(imageIcon);
+					if (!DetectedSign.empty()) {
+						DetectedSign=utils.Scaling(DetectedSign, roadSignTaille);
+						ArrayList<MatOfDMatch> matchingReslut1 = new ArrayList<MatOfDMatch>();
+						double MaxNumberOfMatchedPoints1 =0.0;
+						for(int i = 0; i<refMats.size();i++) {
+							MatOfDMatch element = utils.Matching(DetectedSign, refMats.get(i));
+							matchingReslut1.add(i, element);
+							if (MaxNumberOfMatchedPoints1<element.size().height) {
+								MaxNumberOfMatchedPoints1=element.size().height;
+							}
+						}
+						for(int i = 0; i<matchingReslut1.size();i++) {
+							if (MaxNumberOfMatchedPoints1==matchingReslut1.get(i).size().height) {
+								 System.out.println("Panneau "+refNames.get(i)+" detected");
+							}
+						}
+					}
 					frame.pack();  //this will resize the window to fit the image
 					try {
 						Thread.sleep(50);

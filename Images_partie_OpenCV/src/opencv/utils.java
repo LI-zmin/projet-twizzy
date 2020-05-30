@@ -124,6 +124,33 @@ public class utils {
 				cuttedImg = ball;
 			}
 		}	
+		return cuttedImg;
+	}
+	
+	public static Mat calloutRoadSign(Mat img) {// call out the rond red road sign from a image
+		
+		Mat m = img;
+		Mat hsv_image = Mat.zeros(m.size(),m.type()); 
+		Imgproc.cvtColor(m, hsv_image, Imgproc.COLOR_BGR2HSV); 
+
+		Mat threshold_img = utils.DetecterObjetRouge(hsv_image); 
+		List<MatOfPoint> contours = utils.DetecterContours(threshold_img); 
+		MatOfPoint2f matOfPoint2f = new MatOfPoint2f(); 
+		float[] radius = new float[1]; 
+		Point center = new Point(); 
+		for (int c=0; c < contours.size();c++) {
+			MatOfPoint contour = contours.get(c); 
+			double contourArea = Imgproc.contourArea(contour); 
+			matOfPoint2f.fromList(contour.toList()); 
+			Imgproc.minEnclosingCircle(matOfPoint2f, center, radius); 
+			if ((contourArea/(Math.PI*radius[0]*radius[0])) >=0.7) { 
+				Core.circle(m, center, (int)radius[0], new Scalar(0, 255, 0), 2); 
+				Rect rect = Imgproc.boundingRect(contour); 
+				Core.rectangle(m, new Point(rect.x,rect.y), 
+						new Point(rect.x+rect.width,rect.y+rect.height), 
+						new Scalar (0, 255, 0), 2); 
+			}
+		}	
 		return m;
 	}
 	
@@ -165,22 +192,21 @@ public class utils {
 	            max_dist = dist;
 	    }
 	    moy_dist=moy_dist/matchesList.size();
-	    System.out.println("min_dist " + min_dist+"max_dist "+max_dist+"moy_dist "+moy_dist);
-
+	    
 	    LinkedList<DMatch> good_matches = new LinkedList<DMatch>();
 	    for(int i = 0;i < matchesList.size(); i++){
-	        if (matchesList.get(i).distance <= (0.8*moy_dist))
+	        if (matchesList.get(i).distance <= moy_dist)
 	            good_matches.addLast(matchesList.get(i));
 	    }
 	    MatOfDMatch goodMatches = new MatOfDMatch();
 	    goodMatches.fromList(good_matches);
 
-	    System.out.println(matches.size() + " " + goodMatches.size());
+	    //System.out.println(goodMatches.size().height);
 
-		Mat matchedImage = new Mat(sroadSign.rows(), sroadSign.cols()*2, sroadSign.type()); 
-		Features2d.drawMatches(object, objectKeypoints, sroadSign, signKeypoints, goodMatches, matchedImage); 
-		Imshow(goodMatches.size().toString()+" moy_dist:"+moy_dist, matchedImage);
-		return matches;
+		//Mat matchedImage = new Mat(sroadSign.rows(), sroadSign.cols()*2, sroadSign.type()); 
+		//Features2d.drawMatches(object, objectKeypoints, sroadSign, signKeypoints, goodMatches, matchedImage); 
+		//Imshow(String.valueOf(goodMatches.size().height), matchedImage);
+		return goodMatches;
 	}
 
 	public static ArrayList<String> getFiles(String path) {// return names of ref
