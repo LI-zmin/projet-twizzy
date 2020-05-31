@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,9 +16,11 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfDMatch;
+import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfInt4;
 import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.MatOfPoint;
@@ -34,6 +37,9 @@ import org.opencv.features2d.Features2d;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.HOGDescriptor;
+
+
 
 public class utils {
 	public static Mat LectureImage(String fichier) {
@@ -41,6 +47,45 @@ public class utils {
 		Mat m = Highgui.imread(f.getAbsolutePath());
 		return m;
 	}
+
+	public static ArrayList<double[]> mat2Array(Mat m){
+		int nb = m.rows()*m.cols();
+		ArrayList<double[]> data = new ArrayList<>(nb);
+		for (int i =0; i<m.rows();i++) {
+			for(int j = 0; j<m.cols(); j++) {
+				data.add(i+j, m.get(i,j));
+			}
+		}
+		return data;
+	}
+	public static float[] mat2FloatArray(Mat m) {
+		float dat[]=new float[m.rows()*m.cols()];
+		for(int j = 0;j<m.rows();j++) {
+			for(int k = 0;k<m.cols();k++) {
+				double[] l = m.get(j,k);
+				dat[j*m.cols()+k] = (float)(l[0]);
+				//System.out.print(j+"---"+dat[j*m.rows()+k]+"   ");
+			}				
+		}
+		return dat;
+	}
+	
+	public static float[] concatFloat(float[] first, float[] second) {
+	    float[] both = Arrays.copyOf(first, first.length+second.length);
+	    System.arraycopy(second, 0, both, first.length, second.length);
+	    return both;
+	}
+	public static float[] concatFloat2(float[] first, float[] second) {
+	    float[] both = new float[first.length+second.length];
+	    for(int i = 0; i<first.length;i++) {
+	    	both[i] = first[i];
+	    }
+	    for(int i = 0; i<second.length;i++) {
+	    	both[i+first.length] = second[i];
+	    }	    
+	    return both;
+	}
+	
 	public static void Imshow(String title, Mat img) {
 		MatOfByte matOfByte = new MatOfByte();
 		Highgui.imencode(".png", img, matOfByte);
@@ -95,7 +140,7 @@ public class utils {
 	}
 
 	public static Mat extractRoadSign(Mat img) {// extract the rond red road sign from a image
-		
+
 		Mat m = img;
 		Mat cuttedImg = new Mat();
 		Mat hsv_image = Mat.zeros(m.size(),m.type()); 
@@ -126,16 +171,16 @@ public class utils {
 		}	
 		return cuttedImg;
 	}
-	
+
 	public static MatOfDMatch Matching(Mat object, Mat sroadSign) {
-		
+
 		FeatureDetector orbDetector = FeatureDetector.create(FeatureDetector.ORB); 
 		DescriptorExtractor orbExtractor = DescriptorExtractor.create(DescriptorExtractor.ORB); 
 
 		MatOfKeyPoint objectKeypoints = new MatOfKeyPoint(); 
 		Mat grayObject = utils.SigntoGray(object);
 		orbDetector.detect(grayObject, objectKeypoints); 
-		
+
 		MatOfKeyPoint signKeypoints = new MatOfKeyPoint(); 
 		Mat graySign = utils.SigntoGray(sroadSign);
 		orbDetector.detect(graySign, signKeypoints); 
@@ -145,37 +190,37 @@ public class utils {
 
 		Mat signDescriptor = new Mat(sroadSign.rows(), sroadSign.cols(), sroadSign.type()); 
 		orbExtractor.compute(graySign, signKeypoints, signDescriptor); 
-		
+
 		// faire le matching
 		MatOfDMatch matches = new MatOfDMatch(); 
 		DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE); 
 		matcher.match(objectDescriptor, signDescriptor, matches); 
-		
+
 		List<DMatch> matchesList = matches.toList();
-	    Double max_dist = 0.0;
-	    Double min_dist = 100.0;
-	    Double moy_dist = 0.0;
+		Double max_dist = 0.0;
+		Double min_dist = 100.0;
+		Double moy_dist = 0.0;
 
-	    for(int i = 0;i < matchesList.size(); i++){
-	        Double dist = (double) matchesList.get(i).distance;
-	        moy_dist=moy_dist+dist;
-	        if (dist < min_dist)
-	            min_dist = dist;
-	        if ( dist > max_dist)
-	            max_dist = dist;
-	    }
-	    moy_dist=moy_dist/matchesList.size();
-	    System.out.println("min_dist " + min_dist+"max_dist "+max_dist+"moy_dist "+moy_dist);
+		for(int i = 0;i < matchesList.size(); i++){
+			Double dist = (double) matchesList.get(i).distance;
+			moy_dist=moy_dist+dist;
+			if (dist < min_dist)
+				min_dist = dist;
+			if ( dist > max_dist)
+				max_dist = dist;
+		}
+		moy_dist=moy_dist/matchesList.size();
+		System.out.println("min_dist " + min_dist+"max_dist "+max_dist+"moy_dist "+moy_dist);
 
-	    LinkedList<DMatch> good_matches = new LinkedList<DMatch>();
-	    for(int i = 0;i < matchesList.size(); i++){
-	        if (matchesList.get(i).distance <= (0.8*moy_dist))
-	            good_matches.addLast(matchesList.get(i));
-	    }
-	    MatOfDMatch goodMatches = new MatOfDMatch();
-	    goodMatches.fromList(good_matches);
+		LinkedList<DMatch> good_matches = new LinkedList<DMatch>();
+		for(int i = 0;i < matchesList.size(); i++){
+			if (matchesList.get(i).distance <= (0.8*moy_dist))
+				good_matches.addLast(matchesList.get(i));
+		}
+		MatOfDMatch goodMatches = new MatOfDMatch();
+		goodMatches.fromList(good_matches);
 
-	    System.out.println(matches.size() + " " + goodMatches.size());
+		System.out.println(matches.size() + " " + goodMatches.size());
 
 		Mat matchedImage = new Mat(sroadSign.rows(), sroadSign.cols()*2, sroadSign.type()); 
 		Features2d.drawMatches(object, objectKeypoints, sroadSign, signKeypoints, goodMatches, matchedImage); 
@@ -184,99 +229,137 @@ public class utils {
 	}
 
 	public static ArrayList<String> getFiles(String path) {// return names of ref
-	    ArrayList<String> files = new ArrayList<String>();
-	    File file = new File(path);
-	    File[] tempList = file.listFiles();
+		ArrayList<String> files = new ArrayList<String>();
+		File file = new File(path);
+		File[] tempList = file.listFiles();
 
-	    for (int i = 0; i < tempList.length; i++) {
-	        if (tempList[i].isFile()) {
-	            files.add(tempList[i].toString());
-	        }
-	        if (tempList[i].isDirectory()) {
-	        }
-	    }
-	    return files;
+		for (int i = 0; i < tempList.length; i++) {
+			if (tempList[i].isFile()) {
+				files.add(tempList[i].toString());
+			}
+			if (tempList[i].isDirectory()) {
+			}
+		}
+		return files;
 	}
 
 	public static String getFileName(String fName) {
-        File tempFile =new File( fName.trim());
-        String fileName = tempFile.getName();
+		File tempFile =new File( fName.trim());
+		String fileName = tempFile.getName();
 
-        String[] buff = fileName.split("\\.");
-        return buff[0];
+		String[] buff = fileName.split("\\.");
+		return buff[0];
 	}
-	
+
 	public static String splitDimension(String str) {    
-        String[] buff = str.split("\\x");
-        return buff[1];
+		String[] buff = str.split("\\x");
+		return buff[1];
 	}
 	// READ VIDEO 
-		public static VideoCapture LectureVideo(String filename) {
-			File f = new File(filename);		
-			VideoCapture capture = new VideoCapture(f.getAbsolutePath());
-			
-			if(!capture.isOpened()) {
-				System.out.println("error in lecture video");			
-			}
-			return capture;
+	public static VideoCapture LectureVideo(String filename) {
+		File f = new File(filename);		
+		VideoCapture capture = new VideoCapture(f.getAbsolutePath());
+
+		if(!capture.isOpened()) {
+			System.out.println("error in lecture video");			
 		}
+		return capture;
+	}
 
-		public static BufferedImage Mat2BufferedImage(Mat m) {
-			//Method converts a Mat to a Buffered Image
-			int type = BufferedImage.TYPE_BYTE_GRAY;
-			if ( m.channels() > 1 ) {
-				type = BufferedImage.TYPE_3BYTE_BGR;
-			}
-			int bufferSize = m.channels()*m.cols()*m.rows();
-			byte [] b = new byte[bufferSize];
-			m.get(0,0,b); // get all the pixels
-			BufferedImage image = new BufferedImage(m.cols(),m.rows(), type);
-			final byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-			System.arraycopy(b, 0, targetPixels, 0, b.length);  
-			return image;
+	public static BufferedImage Mat2BufferedImage(Mat m) {
+		//Method converts a Mat to a Buffered Image
+		int type = BufferedImage.TYPE_BYTE_GRAY;
+		if ( m.channels() > 1 ) {
+			type = BufferedImage.TYPE_3BYTE_BGR;
 		}
+		int bufferSize = m.channels()*m.cols()*m.rows();
+		byte [] b = new byte[bufferSize];
+		m.get(0,0,b); // get all the pixels
+		BufferedImage image = new BufferedImage(m.cols(),m.rows(), type);
+		final byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+		System.arraycopy(b, 0, targetPixels, 0, b.length);  
+		return image;
+	}
 
-		public static void PlayVideo(String filename) {
-			Mat frame = new Mat();
-
-			//Create new VideoCapture object
-			VideoCapture camera = new VideoCapture(filename);		
-			//Create new JFrame object
-			JFrame jframe = new JFrame("Video Title");
-			//Inform jframe what to do in the event that you close the program
-			jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			//Create a new JLabel object vidpanel
-			JLabel vidPanel = new JLabel();
-			//assign vidPanel to jframe
-			jframe.setContentPane(vidPanel);
-			//set frame size
-			jframe.setSize(2000, 4000);
-			//make jframe visible
-			jframe.setVisible(true);
-			while (true) {
-				//If next video frame is available
-				if (camera.read(frame)) {
-					//Create new image icon object and convert Mat to Buffered Image
-					ImageIcon image = new ImageIcon(utils.Mat2BufferedImage(frame));
-					//Update the image in the vidPanel
-					vidPanel.setIcon(image);
-					//Update the vidPanel in the JFrame
-					vidPanel.repaint();
+	public static void PlayVideo(VideoCapture cap) {
+		JFrame frame = new JFrame("Video Playback Example");  
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  
+		frame.setSize(400,400);  
+		JLabel imageLabel = new JLabel();
+		frame.add(imageLabel);
+		frame.setVisible(true);
+		ImageProcessor imageProcessor = new ImageProcessor();
+		Mat webcamMatImage = new Mat();  
+		BufferedImage tempImage;  
+		VideoCapture capture = cap;
+		if( capture.isOpened()){  
+			while (true){  
+				capture.read(webcamMatImage);  
+				if( !webcamMatImage.empty() ){  
+					tempImage= imageProcessor.toBufferedImage(webcamMatImage);
+					ImageIcon imageIcon = new ImageIcon(tempImage, "Video playback");
+					imageLabel.setIcon(imageIcon);
+					frame.pack();  //this will resize the window to fit the image
+					try {
+						Thread.sleep(50);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}  
+				else{  
+					System.out.println(" Frame not captured or video has finished"); 
+					break;  
 				}
-			}
-			
+			}  
 		}
-		public BufferedImage toBufferedImage(Mat matrix){
-			int type = BufferedImage.TYPE_BYTE_GRAY;
-			if ( matrix.channels() > 1 ) {
-				type = BufferedImage.TYPE_3BYTE_BGR;
-			}
-			int bufferSize = matrix.channels()*matrix.cols()*matrix.rows();
-			byte [] buffer = new byte[bufferSize];
-			matrix.get(0,0,buffer); // get all the pixels
-			BufferedImage image = new BufferedImage(matrix.cols(),matrix.rows(), type);
-			final byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-			System.arraycopy(buffer, 0, targetPixels, 0, buffer.length);  
-			return image;
+		else{
+			System.out.println("Couldn't open video file.");
 		}
+	}
+
+
+	public static BufferedImage toBufferedImage(Mat matrix){
+		int type = BufferedImage.TYPE_BYTE_GRAY;
+		if ( matrix.channels() > 1 ) {
+			type = BufferedImage.TYPE_3BYTE_BGR;
+		}
+		int bufferSize = matrix.channels()*matrix.cols()*matrix.rows();
+		byte [] buffer = new byte[bufferSize];
+		matrix.get(0,0,buffer); // get all the pixels
+		BufferedImage image = new BufferedImage(matrix.cols(),matrix.rows(), type);
+		final byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+		System.arraycopy(buffer, 0, targetPixels, 0, buffer.length);  
+		return image;
+	}
+
+	public static Mat gammaCorrection(Mat img) {
+		Mat imageMat = utils.SigntoGray(img);
+		double gamma = 1;
+		int width = imageMat.cols();
+		int height = imageMat.rows();
+		byte[] data = new byte[width * height];
+		imageMat.get(0, 0, data);
+		int index = 0;
+		float i = 0;
+		for (int row = 0; row < height; row++) {
+			for (int col = 0; col < width; col++) {
+				index = row * width + col;
+				i = data[index] & 0xff;
+
+				i = (i + 0.5F) / 256;
+				i = (float) Math.pow(i, gamma);		        
+				i = i * 256 - 0.5F;
+
+				data[index] = (byte) i;
+			}
+		}
+		imageMat.put(0, 0, data);
+		return imageMat;
+	}
+
+
+	
+
+
 }
