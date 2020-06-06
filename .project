@@ -14,4 +14,11 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>ffmpeg</name>
+			<type>2</type>
+			<location>C:/Users/Administrator/Downloads/opencv/sources/3rdparty/ffmpeg</location>
+		</link>
+	</linkedResources>
 </projectDescription>
