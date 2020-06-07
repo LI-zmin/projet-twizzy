@@ -305,4 +305,16 @@ public class utils {
 			System.arraycopy(buffer, 0, targetPixels, 0, buffer.length);  
 			return image;
 		}
+		
+		public static float[] mat2FloatArray(Mat m) {
+	        float dat[]=new float[m.rows()*m.cols()];
+	        for(int j = 0;j<m.rows();j++) {
+	            for(int k = 0;k<m.cols();k++) {
+	                double[] l = m.get(j,k);
+	                dat[j*m.cols()+k] = (float)(l[0]);
+	                //System.out.print(j+"---"+dat[j*m.rows()+k]+"   ");
+	            }                
+	        }
+	        return dat;
+	    }
 }
