@@ -1,53 +1,43 @@
 package opencv;
-import java.io.File;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.Vector;
 
-import javax.swing.*;
-
-import java.awt.image.*;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 
 import org.opencv.core.Core;
+import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-import org.opencv.core.MatOfDMatch;
-import org.opencv.core.MatOfInt4;
-import org.opencv.core.MatOfKeyPoint;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.highgui.VideoCapture;
+
 /*import org.opencv.features2d.DescriptorExtractor;
 import org.opencv.features2d.FeatureDetector;
 import org.opencv.highgui.Highgui;*/
 import org.opencv.imgproc.Imgproc;
 import org.opencv.ml.CvANN_MLP;
-import org.opencv.core.Core.MinMaxLocResult;
 
 public class main {
+	
 	public static void main(String[] args) {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME); 
-		Mat tailleRef = new Mat(50,50, CvType.CV_32SC1);
+		Mat tailleRef = new Mat(20,20, CvType.CV_32SC1);
 		
 		// couper image cercle rouge et mise a echelle
 		Mat m = utils.LectureImage("C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\s_p1.jpg"); 
 		Mat extFromImg = utils.extractRoadSign(m); // couper image
 		//utils.Imshow("ext", extFromImg);
+		utils.Imwrite("p1.jpg", utils.SigntoGray(extFromImg));
 
 		Mat roadSignTaille  = utils.LectureImage("C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\ref\\ref30.jpg");
 		Mat ImgEchelle = utils.Scaling(extFromImg, roadSignTaille); // the final img we try to match with diff ref
 
 		//utils.Imshow("ext_scal", ImgEchelle );
-
 		// add all the refs 
-
+	/*
 		ArrayList<String> refPaths = utils.getFiles("C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\ref");		    
 		ArrayList<String> refNames = new ArrayList<String>();
 		ArrayList<Mat> refMats = new ArrayList<Mat>();
@@ -55,7 +45,7 @@ public class main {
 			refNames.add(i, utils.getFileName(refPaths.get(i)));
 			refMats.add(i,utils.LectureImage(refPaths.get(i)));
 		}
-
+*/
 		// VIDEO PLAY
 		String filename = "C:\\Users\\Megaport\\git\\projet-twizzy\\Images_partie_OpenCV\\video1.avi";
 
@@ -69,7 +59,7 @@ public class main {
 		Mat webcamMatImage = new Mat();  
 		BufferedImage tempImage;  
 		VideoCapture capture = new VideoCapture(filename);
-		
+		//int i=0;
 		
 		if( capture.isOpened()){  
 			while (true){  
@@ -80,13 +70,15 @@ public class main {
 					ImageIcon imageIcon = new ImageIcon(tempImage, "Video playback");
 					imageLabel.setIcon(imageIcon);
 					if (!DetectedSign.empty()) {
+						//i++;
 						DetectedSign=utils.SigntoGray(utils.Scaling(DetectedSign, tailleRef));
+						//utils.Imwrite("pp"+i+"fromVideo2.jpg", DetectedSign);
 						float[] sampleFloat = utils.mat2FloatArray(DetectedSign);
 						Mat testSample = new Mat(1,sampleFloat.length,CvType.CV_32FC1);
 						testSample.put(0, 0, sampleFloat);
 						Mat results=new Mat(); 
 						CvANN_MLP ann=new CvANN_MLP();
-						ann.load("bp.xml");// load coeff alreay trained
+						ann.load("bp20x20.xml");// load coeff alreay trained
 						ann.predict(testSample, results);    
 						MinMaxLocResult minMaxLocResult0=Core.minMaxLoc(results);
 						double prediction = minMaxLocResult0.maxLoc.x;
@@ -123,6 +115,9 @@ public class main {
 								 System.out.println("Panneau "+refNames.get(i)+" detected");
 							}
 						}*/
+					}
+					else {
+						System.out.println("no sign detected");
 					}
 					frame.pack();  //this will resize the window to fit the image
 					try {

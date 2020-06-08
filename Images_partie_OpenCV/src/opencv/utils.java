@@ -59,6 +59,9 @@ public class utils {
 			e.printStackTrace(); 
 		} 
 	}
+	public static void Imwrite(String title, Mat img) {
+		Highgui.imwrite(title, img);
+	}
 	public static Mat DetecterObjetRouge(Mat hsv_image) {
 		Mat threshold_img1 = new Mat(); 
 		Mat threshold_img2 = new Mat(); 
@@ -317,4 +320,12 @@ public class utils {
 	        }
 	        return dat;
 	    }
+		
+		public static boolean correlation(Mat a,Mat b) {
+			
+			
+			
+			
+			return true;
+		}
 }
